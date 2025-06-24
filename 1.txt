@@ -1,0 +1,73 @@
+# Define the data dictionary properly
+data = {
+    'plot_summary': [
+        "A young wizard discovers his magical heritage and battles against an evil dark lord.",
+        "A group of astronauts travel through a wormhole in search of a new habitable planet.",
+        "A detective investigates a series of murders that follow the pattern of the seven deadly sins.",
+        "Two star-crossed lovers from feuding families meet and fall in love, ending in tragedy."
+    ],
+    'genre': [
+        'fantasy',
+        'sci-fi',  # Fixed the string literal here
+        'thriller',
+        'romance'
+    ]
+}
+df = pd.DataFrame(data)
+
+# Preprocess the plot summaries
+df['processed_summary'] = df['plot_summary'].apply(preprocess_text)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(
+    df['processed_summary'], df['genre'], test_size=0.2, random_state=42
+)
+
+# Create TF-IDF features
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)
+X_train = tfidf_vectorizer.fit_transform(X_train)
+X_test = tfidf_vectorizer.transform(X_test)
+
+# Train a model (using Logistic Regression as an example)
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+# Now the original code should work
+print(f"Model Accuracy on Test Set: {accuracy:.2f}")
+
+# Print classification report for more detailed metrics (precision, recall, f1-score)
+print("\nClassification Report:\n", classification_report(y_test, y_pred, zero_division=0))
+print("\n" + "="*40 + "\n")
+
+# --- 7. Prediction with New Examples ---
+print("--- Predicting Genres for New Plot Summaries ---")
+
+new_plots = [
+    "A space opera about a rebellion against an evil empire in a galaxy far, far away.",
+    "A scary tale of a haunted doll terrorizing a family in an old house.",
+    "A young boy discovers a hidden portal to a magical land filled with mythical creatures.",
+    "A seasoned detective tracks a cunning mastermind planning a grand heist."
+]
+
+# Preprocess the new plot summaries
+processed_new_plots = [preprocess_text(plot) for plot in new_plots]
+
+# Transform the preprocessed new plots using the trained TF-IDF vectorizer
+X_new = tfidf_vectorizer.transform(processed_new_plots)
+
+# Predict the genres
+predicted_genres = model.predict(X_new)
+
+# Display predictions
+for i, plot in enumerate(new_plots):
+    print(f"Plot: '{plot}'")
+    print(f"Predicted Genre: {predicted_genres[i]}\n")
+
+print("\n" + "="*40 + "\n")
+print("Machine learning model deployment successful!")
